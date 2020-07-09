@@ -1,10 +1,10 @@
-# Remote Sensing and GIS Center of Expertise Cloud Architecture
+# RSGIS/CX Cloud Architecture
 
 A starting place for documentation on Remote Sensing and GIS Center of Expertise (RSGIS/CX) application development and deployment strategies.
 
 ## Table of Contents
 
-- [Remote Sensing and GIS Center of Expertise Cloud Architecture](#remote-sensing-and-gis-center-of-expertise-cloud-architecture)
+- [RSGIS/CX Cloud Architecture](#rsgiscx-cloud-architecture)
   - [Table of Contents](#table-of-contents)
   - [Continuous Integration and Deployment (CI/CD)](#continuous-integration-and-deployment-cicd)
     - [Components](#components)
@@ -24,7 +24,7 @@ The architecture described below supports the following deployment strategies:
 
 ### Components
 
-The infrastructure that supports CI/CD is shown in the diagram below. Each piece is described in more detail in [Configuring AWS CloudEnvironment](#Configuring AWS CloudEnvironment)
+The infrastructure that supports CI/CD is shown in the diagram below. Each piece is described in more detail in [Configuring AWS CloudEnvironment](#configuring-the-aws-cloud-environment)
 
 ![Diagram](images/cicd.png)
 
@@ -36,22 +36,20 @@ The infrastructure that supports CI/CD is shown in the diagram below. Each piece
 
 2. Create S3 Bucket **rsgis-lambda-zips**
    
-   The purpose of this bucket is host most up-to-date zips containing underlying lambda function code and layers. **ObjectCreated** operations in this bucket will automatically trigger updates to associated lambda functions using the function **rsgis-lambda-zip-deployer** .
+   The purpose of this bucket is host most up-to-date zips containing underlying lambda function code and layers. `ObjectCreated` operations in this bucket will automatically trigger updates to associated lambda functions using the function **rsgis-lambda-zip-deployer** .
    
 3. Create Elastic Container Registry (ECR) Repositories
 
-   Note: Ability to push images to these repositories will be given to rsgisci-user
-
-   Start with 2 new repositories. Additional repositories will be required as additional dockerized projects are added:
+   Let's start with 2 new repositories. Additional repositories will be required as additional dockerized projects are added:
    
    1. instrumentation-dcs
    2. instrumentation-dcs-sidecar
 
 4. Create a lambda function called **rsgis-lambda-zip-deployer**
 
-   The purpose of this function is to update lambda function code based on PUT actions in S3 Bucket **rsgis-lambda-zips** .
+   The purpose of this function is to update lambda function code based on `ObjectCreated` actions in S3 Bucket **rsgis-lambda-zips** .
 
-   Configure the Lambda function to fire on **ObjectCreated** operations in bucket **rsgis-lambda-zips**
+   Configure the Lambda function to fire on `ObjectCreated` operations in bucket **rsgis-lambda-zips**
    
    The code for the lambda function is written in javascript and is tracked in source control. The function code is short enough that it it's copied below to give an idea of how it works:
 
@@ -127,9 +125,9 @@ The infrastructure that supports CI/CD is shown in the diagram below. Each piece
 
    User Does **not** need console access
 
-   Create user API Token (AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY)
+   Create user API Token (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
 
-   Assign following user permissions, whether by inline policy or attached roles:
+   Assign following user permissions, whether by inline policy or attached roles. These permissions allow upload to specific S3 buckets and ECR Repositories.
 
       1. Allow CI to upload newly built webapp content
         
@@ -182,7 +180,10 @@ The user has limited priviliges to highly-specific resources in the environment 
 
 The token is shared with the build agent via encrypted [Repository Secrets or Organization Secrets](https://docs.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets). Specifically, the secrets that must be saved with Github below.
 
-    Note: These are the values associated with the rsgisci-user's TOKEN, not the values for the account. AWS User Access Tokens can be disabled, deleted, rotated, etc. as necessary without deleting the user account.
+```
+Note: These are the values associated with the rsgisci-user's TOKEN, not the values for the account.
+AWS User Access Tokens can be disabled, deleted, rotated, etc. as necessary without deleting the user account.
+```
 
 1. AWS_ACCESS_KEY_ID
 2. AWS_SECRET_ACCESS_KEY
